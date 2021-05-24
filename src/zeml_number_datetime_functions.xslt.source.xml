@@ -1,0 +1,187 @@
+<xsl:transform version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:sap="http://www.sap.com/sapxsl"
+  xmlns:eml="http://www.mycompany.com/abapxml"
+>
+
+<!--  Number format  -->
+<xsl:decimal-format name="POINT" decimal-separator="." grouping-separator="," />
+<xsl:decimal-format name="COMMA" decimal-separator="," grouping-separator="." />
+<xsl:decimal-format name="SPACE" decimal-separator="," grouping-separator=" " />
+
+<!--  Currency symbols - more symbols can be added. -->
+<!-- See website: https://en.wikipedia.org/wiki/Language_and_the_euro#Summary -->
+<sap:function name="eml:get_left_currency_symbol">
+  <sap:argument name ="iv_country_key"/>
+  <sap:argument name ="iv_currency_key"/>
+  <sap:result define = "
+    sap:if($iv_currency_key = 'EUR' and
+      ( $iv_country_key = 'NL' ), '€ ',
+    sap:if($iv_currency_key = 'EUR' and
+      ( $iv_country_key = 'GB' ), '€',
+    sap:if($iv_country_key = 'US' and
+      ( $iv_currency_key = 'USD' or $iv_currency_key = 'USDN'), '$',
+    ''
+    )))"/>
+</sap:function>
+
+<sap:function name="eml:get_right_currency_symbol">
+  <sap:argument name ="iv_country_key"/>
+  <sap:argument name ="iv_currency_key"/>
+  <sap:result define = "
+    sap:if($iv_currency_key = 'EUR' and
+      ( $iv_country_key = 'FR' or $iv_country_key = 'DE' ), ' €',
+    ''
+    )"/>
+</sap:function>
+
+<!-- SETTINGS/NUMBER_FORMAT Decimal format = USR01-DCPFM, T005X-XDEZP -->
+<sap:function name="eml:get_decimal_format">
+  <sap:argument name ="iv_number_format"/>
+  <sap:result define = "
+    sap:if($iv_number_format = '', 'COMMA',
+      sap:if($iv_number_format = 'X', 'POINT',
+        sap:if($iv_number_format = 'Y', 'SPACE','')
+      )
+    )"/>
+</sap:function>
+
+<sap:function name="eml:get_same_characters">
+  <sap:argument name ="iv_character"/>
+  <sap:argument name ="iv_count"/>
+  <sap:result
+    define = "
+      sap:if(
+        $iv_count > 1,
+        concat($iv_character, eml:get_same_characters($iv_character, $iv_count - 1)),
+        $iv_character)"/>
+</sap:function>
+
+<sap:function name="eml:get_number_format">
+  <sap:argument name ="iv_sap_number_format"/>
+  <sap:argument name ="iv_decimal_count"/>
+  <sap:argument name ="iv_decimal_character"/>
+  <sap:result
+    define = "
+      concat(
+        sap:if($iv_sap_number_format = '', '###.###.###.###.###.##0',
+          sap:if($iv_sap_number_format = 'X', '###,###,###,###,###,##0',
+            sap:if($iv_sap_number_format = 'Y', '### ### ### ### ### ##0','')
+          )
+        )
+        ,
+        sap:if($iv_decimal_count > 0,
+          sap:if($iv_sap_number_format = '', ',',
+            sap:if($iv_sap_number_format = 'X', '.',
+              sap:if($iv_sap_number_format = 'Y', ',','')
+            )
+          )
+          ,
+          ''
+        )
+        ,
+        eml:get_same_characters($iv_decimal_character,$iv_decimal_count)
+      )
+    "/>
+</sap:function>
+
+<!--SETTINGS/DATE_FORMAT Date format (Domain: XUDATFM, Fields: USR01-DATFM, T005X-DATFM)-->
+<sap:function name ="eml:get_date_format">
+   <sap:argument name ="iv_sap_date_format"/>
+   <sap:result
+     define = "
+       sap:if($iv_sap_date_format = 1,
+         'DD.MM.YYYY',
+       sap:if($iv_sap_date_format = 2,
+         'MM/DD/YYYY',
+       sap:if($iv_sap_date_format = 3,
+         'DD-MM-YYYY',
+       sap:if($iv_sap_date_format = 4,
+         'YYYY.MM.DD',
+       sap:if($iv_sap_date_format = 5,
+         'YYYY/MM/DD',
+       sap:if($iv_sap_date_format = 6,
+         'YYYY-MM-DD',
+       concat( 'To be specified dateformat :', iv_sap_date_format)
+       ))))))"/>
+</sap:function>
+
+<sap:function name ="eml:format_date">
+  <sap:argument name ="iv_date"/>
+  <sap:argument name ="iv_date_format"/>
+  <sap:result
+    define = "
+      sap:if($iv_date_format = 'DD.MM.YYYY',
+        concat( substring($iv_date,9,2), '.', substring($iv_date,6,2), '.', substring($iv_date,1,4) ),
+      sap:if($iv_date_format = 'MM/DD/YYYY',
+        concat( substring($iv_date,6,2), '/', substring($iv_date,9,2), '/', substring($iv_date,1,4) ),
+      sap:if($iv_date_format = 'DD-MM-YYYY',
+        concat( substring($iv_date,9,2), '-', substring($iv_date,6,2), '-', substring($iv_date,1,4) ),
+      sap:if($iv_date_format = 'YYYY.MM.DD',
+        concat( substring($iv_date,1,4), '.', substring($iv_date,6,2), '.', substring($iv_date,9,2) ),
+      sap:if($iv_date_format = 'YYYY/MM/DD',
+        concat( substring($iv_date,1,4), '/', substring($iv_date,6,2), '/', substring($iv_date,9,2) ),
+      sap:if($iv_date_format = 'YYYY-MM-DD',
+        concat( substring($iv_date,1,4), '-', substring($iv_date,6,2), '-', substring($iv_date,9,2) ),
+      concat( 'To be specified dateformat', $iv_date_format, ' for date ', $iv_date)
+       ))))))"/>
+</sap:function>
+
+<!--SETTINGS/TIME_FORMAT Time format = USR01-TIMEFM, T005X-TIMEFM
+  0  24 Hour Format (Example: 12:05:10)
+  1  12 Hour Format (Example: 12:05:10 PM)
+-->
+<sap:function name ="eml:get_time_format">
+   <sap:argument name ="iv_sap_time_format"/>
+  <sap:result
+     define = "
+       sap:if($iv_sap_time_format = 0, '24'
+       ,
+       sap:if($iv_sap_time_format = 1, '12'
+       ,
+       concat( 'To be specified timeformat ', $iv_sap_time_format)
+       ))"/>
+</sap:function>
+
+<sap:function name ="eml:format_time">
+
+  <!-- Time format hh:mm:ss -->
+  <sap:argument name ="iv_time"/>
+
+  <!-- Time format '24' / '12' -->
+  <sap:argument name ="iv_time_format"/>
+
+   <!-- Boolean: true() or false() -->
+   <sap:argument name ="iv_seconds_ind"/>
+
+   <sap:result
+     define = "
+       sap:if($iv_time_format = '24',
+         concat(
+           substring($iv_time,1,2),
+           ':',
+           substring($iv_time,4,2),
+           sap:if( $iv_seconds_ind = true(), ':', ''),
+           sap:if( $iv_seconds_ind = true(), substring($iv_time,7,2), '')
+         )
+       ,
+       sap:if($iv_time_format = '12',
+         concat(
+           sap:if( number(substring($iv_time,1,2)) &lt;= 12,
+             substring($iv_time,1,2),
+             number(substring($iv_time,1,2)) - 12 ),
+           ':',
+           substring($iv_time,4,2),
+           sap:if( $iv_seconds_ind = true(), ':', ''),
+           sap:if( $iv_seconds_ind = true(), substring($iv_time,7,2), ''),
+           ' ',
+           sap:if( number(substring($iv_time,1,2)) &lt;= 12,
+             'AM',
+             'PM' )
+         )
+       ,
+       concat( 'To be specified timeformat', SETTINGS/TIME_FORMAT, ' for time ', $iv_time)
+       ))"/>
+</sap:function>
+
+</xsl:transform>

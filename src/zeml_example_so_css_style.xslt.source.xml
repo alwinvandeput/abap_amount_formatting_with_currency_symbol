@@ -1,0 +1,90 @@
+<xsl:transform version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:sap="http://www.sap.com/sapxsl"
+>
+
+<xsl:strip-space elements="*"/>
+
+<xsl:template name="EXAMPLE_SO_CSS_STYLE">
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main1{
+  border: 0px solid black;
+}
+
+.head {
+  font-family: Arial;
+  font-size: 12px;
+  color: white;
+  background-color: black;
+}
+
+.logo{
+  font-family: Arial;
+  font-size: 20pt;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.content {
+  font-family: Arial;
+  font-size: 12px;
+  color: black;
+  background-color: white;
+}
+
+.innertable {
+  width: 100%;
+  border: 0px;
+  background-color: white;
+}
+
+.text_label{
+  font-weight: bold;
+  text-align : left;
+}
+
+.number_label{
+  font-weight: bold;
+  text-align : right;
+}
+
+.amount_value{
+  text-align: right;
+}
+
+.total_cell{
+  color: white;
+  background-color: black;
+  font-weight: bold;
+}
+
+.no_frame_table{
+  border: 0px solid black;
+}
+
+.frame_cell{
+  border: 1px solid black;
+}
+
+.no_frame_cell{
+  border: 0px solid blue;
+}
+
+.ex1 {
+  border: 6px solid black;
+  padding-top: 0px;
+}
+
+</xsl:template>
+
+</xsl:transform>

@@ -1,0 +1,88 @@
+<xsl:transform version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:sap="http://www.sap.com/sapxsl"
+  xmlns:asx="http://www.sap.com/abapxml"
+  xmlns:eml="http://www.mycompany.com/abapxml"
+  exclude-result-prefixes="eml asx">
+
+<xsl:import sap:name="ZEML_NUMBER_DATETIME_FUNCTIONS"/>
+<xsl:import sap:name="ZEML_EXAMPLE_SO_CSS_STYLE"/>
+
+<!-- Number, date and time variables -->
+<xsl:variable name="decimal_format" select="eml:get_decimal_format(//asx:values/SETTINGS/NUMBER_FORMAT)"/>
+<xsl:variable name="amount_format" select="eml:get_number_format(//asx:values/SETTINGS/NUMBER_FORMAT, 2, '0')"/>
+<xsl:variable name="quantity_format" select="eml:get_number_format(//asx:values/SETTINGS/NUMBER_FORMAT, 2, '#')"/>
+
+<xsl:variable name="date_format" select="eml:get_date_format(//asx:values/SETTINGS/DATE_FORMAT)"/>
+<xsl:variable name="time_format" select="eml:get_time_format(//asx:values/SETTINGS/TIME_FORMAT)"/>
+
+<!-- Mapping -->
+<xsl:output method="text"/>
+
+<xsl:template match="asx:values">
+
+<title>
+    <xsl:value-of select="LABEL/ORDER_NO"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="CONTENT/ORDER_NO"/>
+</title>
+
+<xsl:value-of select="LABEL/ORDER_NO"/>
+<xsl:text>: </xsl:text>
+<xsl:value-of select="CONTENT/ORDER_NO"/>
+<xsl:text>&#13;&#10;</xsl:text>
+
+<xsl:value-of select="LABEL/DATE"/>
+<xsl:text>: </xsl:text>
+<xsl:value-of select="eml:format_date(SYST/DATUM, $date_format)"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="eml:format_time(SYST/UZEIT, $time_format, false())"/>
+<xsl:text>&#13;&#10;</xsl:text>
+<xsl:text>&#13;&#10;</xsl:text>
+
+<xsl:for-each select="CONTENT/ITEMS/*">
+
+  <xsl:text>--------------------------------------------------------------</xsl:text>
+  <xsl:text>&#13;&#10;</xsl:text>
+  <xsl:value-of select="//asx:values/LABEL/ITEM_NO"/>
+  <xsl:text>: </xsl:text>
+  <xsl:value-of select="number(ITEM_NO)"/>
+  <xsl:text>&#13;&#10;</xsl:text>
+  <xsl:text>--------------------------------------------------------------</xsl:text>
+  <xsl:text>&#13;&#10;</xsl:text>
+
+  <xsl:value-of select="//asx:values/LABEL/DESCRIPTION"/>
+  <xsl:text>: </xsl:text>
+  <xsl:value-of select="DESCRIPTION"/>
+  <xsl:text>&#13;&#10;</xsl:text>
+
+  <xsl:value-of select="//asx:values/LABEL/QUANTITY"/>
+  <xsl:text>: </xsl:text>
+  <xsl:value-of select="format-number(QUANTITY, $quantity_format, $decimal_format)"/>
+  <xsl:text>&#13;&#10;</xsl:text>
+
+  <xsl:value-of select="//asx:values/LABEL/UNIT"/>
+  <xsl:text>: </xsl:text>
+  <xsl:value-of select="UNIT"/>
+  <xsl:text>&#13;&#10;</xsl:text>
+
+  <xsl:value-of select="//asx:values/LABEL/NETT_AMOUNT"/>
+  <xsl:text>: </xsl:text>
+  <xsl:value-of select="format-number(NETT_AMOUNT, $amount_format, $decimal_format)"/>
+  <xsl:text>&#13;&#10;</xsl:text>
+</xsl:for-each>
+
+<xsl:text>&#13;&#10;</xsl:text>
+<xsl:text>--------------------------------------------------------------</xsl:text>
+<xsl:text>&#13;&#10;</xsl:text>
+<xsl:text>--------------------------------------------------------------</xsl:text>
+<xsl:text>&#13;&#10;</xsl:text>
+
+<xsl:value-of select="LABEL/TOTAL"/>
+<xsl:text>: </xsl:text>
+<xsl:value-of select="CONTENT/CURRENCY_KEY"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="format-number(CONTENT/NETT_AMOUNT, $amount_format, $decimal_format)"/>
+</xsl:template>
+
+</xsl:transform>

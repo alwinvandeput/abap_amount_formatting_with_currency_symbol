@@ -1,0 +1,168 @@
+<xsl:transform version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:sap="http://www.sap.com/sapxsl"
+  xmlns:asx="http://www.sap.com/abapxml"
+  xmlns:eml="http://www.mycompany.com/abapxml"
+  exclude-result-prefixes="asx eml">
+
+<xsl:import sap:name="ZEML_NUMBER_DATETIME_FUNCTIONS"/>
+<xsl:import sap:name="ZEML_EXAMPLE_SO_CSS_STYLE"/>
+
+<!-- Number, date and time variables -->
+<xsl:variable name="decimal_format"  select="eml:get_decimal_format(//asx:values/SETTINGS/NUMBER_FORMAT)"/>
+<xsl:variable name="amount_format"   select="eml:get_number_format(//asx:values/SETTINGS/NUMBER_FORMAT, //asx:values/SETTINGS/CURRENCY_DECIMAL_COUNT, '0')"/>
+<xsl:variable name="quantity_format" select="eml:get_number_format(//asx:values/SETTINGS/NUMBER_FORMAT, 2, '#')"/>
+<xsl:variable name="date_format"     select="eml:get_date_format(//asx:values/SETTINGS/DATE_FORMAT)"/>
+<xsl:variable name="time_format"     select="eml:get_time_format(//asx:values/SETTINGS/TIME_FORMAT)"/>
+
+<xsl:variable name="left_currency_symbol" select="eml:get_left_currency_symbol(//asx:values/SETTINGS/COUNTRY_KEY, //asx:values/SETTINGS/CURRENCY_KEY)"/>
+<xsl:variable name="right_currency_symbol"  select="eml:get_right_currency_symbol(//asx:values/SETTINGS/COUNTRY_KEY, //asx:values/SETTINGS/CURRENCY_KEY)"/>
+
+
+<!-- Mapping -->
+<xsl:output method="html" indent="yes"/>
+
+<xsl:strip-space elements="*"/>
+
+<xsl:template match="asx:values">
+
+<html>
+
+<head>
+
+  <title>
+    <xsl:value-of select="LABEL/ORDER_NO"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="CONTENT/ORDER_NO"/>
+  </title>
+
+  <style>
+    <xsl:call-template name="EXAMPLE_SO_CSS_STYLE"/>
+  </style>
+
+</head>
+
+<body>
+
+  <table class="center main1 content" style="table-layout: auto; width: 700px;" cellpadding="0" cellspacing="0">
+
+    <tr>
+      <td class="no_frame_cell">
+
+        <table class="innertable" style="background-color: black; color: white;">
+          <tr>
+          <td width="300px" height="100px" class="logo">myCompany</td>
+          <td>
+            <table class="innertable" style="background-color: black; color: white;">
+              <tr>
+                <td class="text_label">
+                  <xsl:value-of select="LABEL/ORDER_NO"/>
+                  <xsl:text>: </xsl:text>
+                  <xsl:value-of select="CONTENT/ORDER_NO"/>
+                </td>
+              </tr>
+              <tr>
+                <td class="text_label">
+                  <xsl:value-of select="LABEL/DATE"/>
+                  <xsl:text>: </xsl:text>
+                  <xsl:value-of select="eml:format_date(SYST/DATUM, $date_format)"/>
+                  <xsl:text> </xsl:text>
+                  <xsl:value-of select="eml:format_time(SYST/UZEIT, $time_format, false())"/>
+                </td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+
+        <br/>
+
+        <table class="no_frame_cell" cellpadding="0">
+          <tr class="no_frame_cell">
+            <td class="frame_cell">
+              <table class="innertable" cellpadding="2" cellspacing="2">
+                <tr class="head">
+                  <th width="50px"  class="text_label"  ><xsl:value-of select="LABEL/ITEM_NO"/></th>
+                  <th width="300px" class="text_label"  ><xsl:value-of select="LABEL/DESCRIPTION"/></th>
+                  <th width="250px" class="number_label"><xsl:value-of select="LABEL/QUANTITY"/></th>
+                  <th width="50px"  class="text_label"  ><xsl:value-of select="LABEL/UNIT"/></th>
+                  <th width="150px" class="number_label"><xsl:value-of select="LABEL/NETT_AMOUNT"/></th>
+                </tr>
+
+                <xsl:for-each select="CONTENT/ITEMS/*">
+
+                  <tr>
+                    <td class="no_frame_cell">
+                      <xsl:value-of select="number(ITEM_NO)"/>
+                    </td>
+                    <td class="no_frame_cell">
+                      <xsl:value-of select="DESCRIPTION"/>
+                    </td>
+                    <td class="no_frame_cell amount_value">
+                      <xsl:value-of select="format-number(QUANTITY, $quantity_format, $decimal_format)"/>
+                    </td>
+                    <td class="no_frame_cell">
+                      <xsl:value-of select="UNIT"/>
+                    </td>
+                    <td class="no_frame_cell amount_value">
+                      <xsl:value-of select="$left_currency_symbol"/>
+                      <xsl:value-of select="format-number(NETT_AMOUNT, $amount_format, $decimal_format)"/>
+                      <xsl:value-of select="$right_currency_symbol"/>
+                    </td>
+                  </tr>
+
+                </xsl:for-each>
+
+              </table>
+
+              <table class="innertable" cellpadding="2" cellspacing="2">
+                <tr>
+                  <td width="550px" class="no_frame_cell number_label">
+                    <xsl:value-of select="LABEL/TOTAL"/>
+                  </td>
+                  <td width="150px" class="no_frame_cell amount_value total_cell" >
+                    <xsl:value-of select="$left_currency_symbol"/>
+                    <xsl:value-of select="format-number(CONTENT/NETT_AMOUNT, $amount_format, $decimal_format)"/>
+                    <xsl:value-of select="$right_currency_symbol"/>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <br/>
+        <br/>
+        <p align="center"><xsl:value-of select="LABEL/FOOTER" disable-output-escaping="yes"/></p>
+
+        <br/>
+        <br/>
+        <xsl:text>Settings:</xsl:text>
+        <br/>
+        <xsl:text>Country key:</xsl:text><xsl:value-of select="SETTINGS/COUNTRY_KEY"/><br/>
+        <xsl:text>Language key:</xsl:text><xsl:value-of select="SETTINGS/LANGUAGE_KEY"/><br/>
+        <xsl:text>Currency key:</xsl:text><xsl:value-of select="SETTINGS/CURRENCY_KEY"/><br/>
+        <xsl:text>Currency decimal count:</xsl:text><xsl:value-of select="SETTINGS/CURRENCY_DECIMAL_COUNT"/><br/>
+        <br/>
+        <xsl:text>SAP number format:</xsl:text><xsl:value-of select="SETTINGS/NUMBER_FORMAT"/><br/>
+        <xsl:text>SAP date format:</xsl:text><xsl:value-of select="SETTINGS/DATE_FORMAT"/><br/>
+        <xsl:text>SAP time format:</xsl:text><xsl:value-of select="SETTINGS/TIME_FORMAT"/><br/>
+        <xsl:text>SAP user name:</xsl:text><xsl:value-of select="SETTINGS/USER_NAME"/><br/>
+        <br/>
+        <xsl:text>XSLT decimal format:</xsl:text><xsl:value-of select="$decimal_format"/><br/>
+        <xsl:text>XSLT amount format:</xsl:text><xsl:value-of select="$amount_format"/><br/>
+        <xsl:text>XSLT quantity format:</xsl:text><xsl:value-of select="$quantity_format"/><br/>
+        <br/>
+        <xsl:text>Left currency symbol:</xsl:text><xsl:value-of select="$left_currency_symbol"/><br/>
+        <xsl:text>Right currency symbol:</xsl:text><xsl:value-of select="$right_currency_symbol"/><br/>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+
+</xsl:template>
+
+</xsl:transform>
